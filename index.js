@@ -170,41 +170,27 @@ app.delete('/styles/:id/',
 
 // --- USERS ---
 // GET user (no option to get all because that doesn't seem necessary)
+// Also works as a LOGIN feature
 app.get('/user/:id/',
     upload.none(),
     async (request, response) => {
         let result = {};
         try {
-            console.log(request.params);
             result = await user.get(request.id, request.query);
+            
+            // Determine if this was a login or just a user request
+            if (typeof result[0].password !== 'undefined' && result[0].password.length > 0) {
+                // TODO: cookies for login
+                response.cookie('simplecmsloggedin', result[0].id, { maxAge: 20000000 });
+            }
         }
         catch (error) {
+            console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
     }
 );
-
-// LOGIN user
-// TODO
-app.get('/user/:username/:password/',
-    upload.none(),
-    async (request, response) => {
-        let result = {};
-        try {
-            console.log(request.params);
-            let username = request.params.username;
-            let password = request.params.password;
-            let encryptedPassword;
-            let query = `WHERE username=${username}, password=${encryptedPassword}`;
-            result = await user.get(request.id, query);
-        }
-        catch (error) {
-            return response.status(500).json({ message: "Server error while querying database." });
-        }
-        response.json({ 'data': result });
-    }
-)
 
 // POST new user
 app.post('/user/:id/',
@@ -212,6 +198,11 @@ app.post('/user/:id/',
     async (request, response) => {
         let result = {};
         try {
+            console.log("body: ", request);
+            let username = request.body.username;
+            let password = request.body.password;
+            let encryptedPassword = hash.update(password).digest('base64');
+            console.log(encryptedPassword);
             result = await user.insert(request.id, request.query);
         }
         catch (error) {

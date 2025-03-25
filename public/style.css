@@ -45,3 +45,22 @@ a:hover {
     flex-direction: column;
     height: 100vh;
 }
+
+@media screen and (max-width: 800px) {
+    body { 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .title-banner h3 {
+        display: block;
+        width: 100%;
+    }
+
+    .account-form input, .account-form button {
+        max-width: 100%;
+    }
+}

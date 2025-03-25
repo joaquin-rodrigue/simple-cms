@@ -44,14 +44,17 @@
 
         <footer class="row title-footer">
             <p>&copy; Joaquin Rodriguez, 2025</p>
-            <p></p>
+            <p>This site uses cookies to keep track of login status, features may break without cookies enabled!</p>
         </footer>
     </div>
 
     <script>
         // Template for how to modify the links above given 
         // whether the user is logged in or not
-        if (false /*user != null*/) {
+        // NOTICE: I'm fairly sure this isn't the best practice using cookies like this that can rather easily be
+        // spoofed by the client but that will be an exercise for a later date.
+        console.log(document.cookie);
+        if (document.cookie.includes('simplecmsloggedin')) {
             document.getElementById('signin').href = 'mypages.html';
             document.getElementById('signin').innerHTML = '<li>View my content</li>';
             document.getElementById('create').href = 'createpage.html';

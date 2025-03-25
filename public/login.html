@@ -25,6 +25,10 @@
             <h3><a href="index.html">Back to Home</a></h3>
         </header>
 
+        <div class="row">
+            <p class="error login-error" id="login-error">&nbsp;</p>
+        </div>
+
         <main class="row account-form">
             <div class="row">
                 <label for="username">Username</label>
@@ -90,7 +94,7 @@
                 method: "GET"
             }
 
-            fetch(`http://localhost/user/${new URLSearchParams(getParameters)}`, fetchSettings)
+            fetch(`http://localhost/user/${username}/?${new URLSearchParams(getParameters)}`, fetchSettings)
                 .then(response => {
                     return new Promise(resolve => response.json()
                         .then(json => resolve({
@@ -101,6 +105,9 @@
                 })
                 .then(({ status, json }) => {
                     // something something error messages
+                    if (!json.data) {
+                        document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account does not yet exist.';
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -134,13 +141,13 @@
             }
 
             // Send it
-            const parameters = {
-                username: username,
-                password: password
-            };
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
 
             const fetchSettings = {
                 method: "POST",
+                body: formData
             };
 
             fetch(`http://localhost/user/${username}`, fetchSettings)
