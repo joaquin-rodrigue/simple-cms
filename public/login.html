@@ -70,6 +70,7 @@
             document.getElementById('password-error').innerHTML = '&nbsp;';
             document.getElementById('confirm-error').innerHTML = '&nbsp;';
             document.getElementById('username-error').innerHTML = '&nbsp;';
+            document.getElementById('login-error').innerHTML = '&nbsp;';
 
             // Error checks before sending
             if (password.length === 0) {
@@ -77,8 +78,16 @@
                 document.getElementById('password-error').innerHTML = "Please enter a password.";
                 return;
             }
+            if (password.length > 127) {
+                document.getElementById('password-error').innerHTML = "Please enter a shorter password.";
+                return;
+            }
             if (username.length === 0) {
                 document.getElementById('username-error').innerHTML = "Please enter a username.";
+                return;
+            }
+            if (username.length > 127) {
+                document.getElementById('username-error').innerHTML = "Please enter a shorter username.";
                 return;
             }
 
@@ -108,8 +117,12 @@
                     if (!json.data) {
                         document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account does not yet exist.';
                     }
+                    else {
+                        window.location.replace('http://localhost/');
+                    }
                 })
                 .catch(error => {
+                    document.getElementById('login-error').innerHTML = 'Something went wrong, please try again.';
                     console.error('Error:', error);
                 });
         });
@@ -123,6 +136,7 @@
             document.getElementById('password-error').innerHTML = '&nbsp;';
             document.getElementById('confirm-error').innerHTML = '&nbsp;';
             document.getElementById('username-error').innerHTML = '&nbsp;';
+            document.getElementById('login-error').innerHTML = '&nbsp;';
 
             // Error checks before sending
             if (password !== confirmPassword) {
@@ -161,6 +175,12 @@
                 })
                 .then(({ status, json }) => {
                     // something something error messages
+                    if (!json.data) {
+                        document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account already exists.';
+                    }
+                    else {
+                        window.location.replace('http://localhost/');
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);

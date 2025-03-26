@@ -16,6 +16,7 @@
 
     <!-- Page styles -->
     <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="globalutils.js"></script>
 </head>
 
 <body>
@@ -87,8 +88,6 @@
     </div>
 
     <script>
-        const isEmpty = obj => Object.keys(obj).length === 0;
-
         // Display table function
         const displayTable = ({ status, json }) => {
             document.getElementById('loading-text').hidden = true;
@@ -113,14 +112,15 @@
             document.getElementById('pages-table').innerHTML = table;
         }
 
+        // Display errors when the server returns no data/500 errors
         const displayError = ({ status, json }) => {
             document.getElementById('loading-text').hidden = false;
             document.getElementById('loading-text').innerHTML = "No results found! Check your search please.";
             document.getElementById('pages-table').innerHTML = '';
         }
 
-        // Search button
-        document.getElementById('search').addEventListener('click', event => {
+        // Search function; separated so we can call it on load + on search button press
+        const search = () => {
             const getParameters = {};
 
             if (document.getElementById('searchname').value.length !== 0) {
@@ -169,7 +169,11 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
-        });
+        }
+
+        // Search button + search all on load
+        document.getElementById('search').addEventListener('click', search);
+        window.onload = search;
     </script>
 </body>
 

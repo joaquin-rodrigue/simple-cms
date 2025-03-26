@@ -26,6 +26,10 @@
     </div>
 
     <script>
+        // This feels like the most cursed javascript code Ive ever written
+        // I couldn't find how the MDN reference suggests deleting cookies
+        document.cookie = document.cookie.substring(0, document.cookie.indexOf('simplecmsloggedin=')) 
+        + document.cookie.substring(document.cookie.indexOf('simplecmsloggedin=') + document.cookie.match(/simplecmsloggedin=\d+/).length, document.cookie.length);
         
     </script>
 </body>

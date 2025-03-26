@@ -53,7 +53,7 @@
         // whether the user is logged in or not
         // NOTICE: I'm fairly sure this isn't the best practice using cookies like this that can rather easily be
         // spoofed by the client but that will be an exercise for a later date.
-        console.log(document.cookie);
+        //console.log(document.cookie);
         if (document.cookie.includes('simplecmsloggedin')) {
             document.getElementById('signin').href = 'mypages.html';
             document.getElementById('signin').innerHTML = '<li>View my content</li>';

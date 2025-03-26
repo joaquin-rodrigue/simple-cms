@@ -16,6 +16,7 @@
 
     <!-- Page styles -->
     <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="globalutils.js"></script>
 </head>
 
 <body>
@@ -31,18 +32,168 @@
         </header>
 
         <main class="row">
-            <table class="table-responsive" id="user-content">
-                <h1>Loading, please wait...</h1>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="searchname">Search by Name</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input name="searchname" id="searchname" type="text">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="searchcontent">Search by Content</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input name="searchcontent" id="searchcontent" type="text">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="sort">Sort order</label>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="order" id="order">
+                            <option value="ASC">Ascending</option>
+                            <option value="DESC">Descending</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <button id="search">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <h1 id="loading-text">Loading, please wait...</h1>
+            <table id="pages-table" class="table-responsive">
             </table>
         </main>
     </div>
 
     <script>
-        if (true /* user.loggedin */) {
-            document.getElementById('logged-in').hidden = false;
-            document.getElementsByClassName('not-logged-in')[0].hidden = true;
-            document.getElementById('user-header').innerHTML = `${undefined}'s Content`;
+        if (!document.cookie.includes('simplecmsloggedin')) {
+            return;
         }
+
+        // Get user data so we can display username and pages
+        let fetchSettings = {
+            method: 'GET'
+        };
+        let username = '';
+
+        fetch(`http://localhost/user/${locateID(document.cookie)}`, fetchSettings)
+            .then(response => {
+                return new Promise(resolve => response.json()
+                    .then(json => resolve({
+                        status: response.status,
+                        json,
+                    })
+                ));
+            })
+            .then(({ status, json }) => {
+                if (status === 200) {
+                    username = json.data.username;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        
+        if (!username) {
+            return;
+        }
+
+        // Turn on the page
+        document.getElementById('logged-in').hidden = false;
+        document.getElementsByClassName('not-logged-in')[0].hidden = true;
+        document.getElementById('user-header').innerHTML = `${username}'s Content`;
+
+        // Display table function
+        const displayTable = ({ status, json }) => {
+            document.getElementById('loading-text').hidden = true;
+            let table = `<thead>
+                <tr>
+                    <th>Page Name</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            if (typeof json.data !== 'undefined') {
+                for (row of json.data) {
+                    table += `<tr>
+                        <td>${row.name}</td>
+                        <td>WIP</td>
+                        <td>WIP</td>    
+                    </tr>`;
+                }
+            }
+            table += '</tbody>';
+            document.getElementById('pages-table').innerHTML = table;
+        }
+
+        // Display errors when the server returns no data/500 errors
+        const displayError = ({ status, json }) => {
+            document.getElementById('loading-text').hidden = false;
+            document.getElementById('loading-text').innerHTML = "No results found! Check your search please.";
+            document.getElementById('pages-table').innerHTML = '';
+        }
+
+        // Search function; separated so we can call it on load + on search button press
+        const search = () => {
+            const getParameters = {};
+
+            if (document.getElementById('searchname').value.length !== 0) {
+                getParameters.name = document.getElementById('searchname').value;
+            }
+            if (document.getElementById('searchcontent').value.length !== 0) {
+                getParameters.body = document.getElementById('searchcontent').value;
+            }
+            if (document.getElementById('order').value.length !== 0) {
+                getParameters.order = document.getElementById('order').value;
+            }
+
+            // Fetch request
+            let fetchSettings = {
+                method: 'GET'
+            };
+            let getString = !isEmpty(getParameters) ? '?' + new URLSearchParams(getParameters) : '';
+            document.getElementById('loading-text').hidden = false;
+            document.getElementById('loading-text').innerHTML = "Loading, please wait...";
+
+            fetch(`http://localhost/webpage/${getString}`, fetchSettings)
+                .then(response => {
+                    return new Promise(resolve => response.json()
+                        .then(json => resolve({
+                            status: response.status,
+                            json,
+                        })
+                    ));
+                })
+                // Parse the response
+                // I hate how much indentation there is in this code so I'm splitting it up
+                .then(({ status, json }) => {
+                    if (status === 200) {
+                        displayTable({ status, json });
+                    }
+                    else {
+                        displayError({ status, json });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Search button + search all on load
+        document.getElementById('search').addEventListener('click', search);
+        window.onload = search;
     </script>
 </body>
 
