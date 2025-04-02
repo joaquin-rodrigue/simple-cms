@@ -16,6 +16,7 @@
 
     <!-- Page styles -->
     <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="globalutils.js"></script>
 </head>
 
 <body>
@@ -33,7 +34,7 @@
     <div class="edit-page" hidden>
         <!-- Thinking of putting this in an IFrame? -->
         <!-- I'm not quite sure how to do this but -->
-        <header class="tools">
+        <header class="tools" id="tools">
             <ul>
                 <li><button id="save-and-quit">Home</button></li>
                 <li><button id="new-content">New</button></li>
@@ -41,11 +42,24 @@
             </ul>
         </header>
 
-        <div class="active">
-
+        <div class="active" id="active">
+            <div class="popup error error-popup" id="error-popup" hidden>&nbsp;</div>
+            <div class="popup new-content-select" id="select-new-popup" hidden>
+                <p>Select an item to add:</p>
+                <button id="add-text">Text</button>
+                <button id="add-header">Header</button>
+                <button id="add-image">Image</button>
+                <button id="add-section">Section</button>
+                <button id="add-list">List</button>
+                <button id="close" class="close-popup">Cancel</button>
+            </div>
+            <div class="popup place-new-element" id="place-new-element" hidden>
+                <p>Type to enter text; Click to place</p>
+            </div>
         </div>
 
-        <main class="page">
+        <!-- This is the part I'm thinking about putting in an IFrame -->
+        <main class="page" id="page">
 
         </main>
     </div>
@@ -58,7 +72,108 @@
 
         // TODO: get the page details from the database
         document.getElementById('not-logged-in').hidden = true;
-        
+        let fetchSettings = {
+            method: 'GET'
+        };
+        const pageId = new URLSearchParams(window.location.search).get('id');
+        let title, head, body;
+
+        if (typeof pageId !== 'string' || pageId.length === 0) {
+            document.querySelector('page-not-found').hidden = false;
+            return;
+        }
+
+        // I'm thinking the page id will be passed via the URL
+        fetch(`${serverAddress}/webpage/${pageId}`, fetchSettings)
+            .then(response => {
+                return new Promise(resolve => response.json()
+                    .then(json => resolve({
+                        status: response.status,
+                        json,
+                    })
+                ));
+            })
+            .then(({ status, json }) => {
+                if (status === 200 && json.data?.owner === locateID(document.cookie)) {
+                    title = json.data.name;
+                    head = json.data.head;
+                    body = json.data.body;
+                    document.querySelector('edit-page').hidden = false;
+                }
+                else {
+                    document.querySelector('page-not-found').hidden = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // I kinda don't know what to do here so I'm redirecting
+                window.location.replace('index.html');
+            });
+
+        if (!body) {
+            return;
+        }
+
+        // Hooray we have page data
+        document.getElementById('page').innerHTML = body;
+
+        // --- HELPFUL FUNCTIONS ---
+        const closePopups = () => {
+            document.getElementById('error-popup').hidden = true;
+            document.getElementById('select-new-popup').hidden = true;
+
+            // ... add other popups to close here
+        }
+
+        // --- EDIT PAGE FUNCTIONS ---
+        // Save and quit button
+        const saveAndQuit = () => {
+            fetchSettings = {
+                method: 'PUT'
+            };
+
+            fetch(`${serverAddress}/webpage/${pageId}`, fetchSettings)
+                .then(response => {
+                    return new Promise(resolve => response.json()
+                        .then(json => resolve({
+                            status: response.status,
+                            json
+                        })
+                    ));
+                })
+                .then(({ status, json }) => {
+                    if (status === 200) {
+                        // data saved successfully, we can redirect
+                        window.location.replace('mypages.html');
+                    }
+                    else {
+                        document.getElementById('error-popup').hidden = false;
+                        document.getElementById('error-popup').innerHTML = `
+                            <p>Couldn't save the page!</p>
+                            <button class='close-popup' onclick='closePopups'>Ok</button>`;
+                    }
+                });
+        }
+
+        // Add new content popup - this isn't the function that does the work
+        const newContent = () => {
+            document.getElementById('select-new-popup').hidden = false;
+        }
+
+        // Lets the user place an element on the page
+        const placeElementOnPage = element => {
+            document.getElementById('select-new-popup').hidden = true;
+            document.getElementById('place-new-element').hidden = false;
+            document.getElementById('place-new-element').innerHTML = `<${element}></${element}>`;
+
+        }
+
+        // This is the function that does the work
+        const addElementToPage = element => {
+            // element is literally the name of the html tag; i.e.
+            // if element = p, then this will generate a <p> element
+            
+        }
     </script>
 </body>
 

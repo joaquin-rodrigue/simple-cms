@@ -37,7 +37,6 @@ app.get('/webpage/',
     async (request, response) => {
         let result = {};
         try {
-            
             result = await webpage.getAll(request.query);
         }
         catch (error) {

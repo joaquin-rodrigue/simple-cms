@@ -16,6 +16,7 @@
 
     <!-- Page styles -->
     <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="globalutils.js"></script>
 </head>
 
 <body>
@@ -103,7 +104,7 @@
                 method: "GET"
             }
 
-            fetch(`http://localhost/user/${username}/?${new URLSearchParams(getParameters)}`, fetchSettings)
+            fetch(`${serverAddress}/user/${username}/?${new URLSearchParams(getParameters)}`, fetchSettings)
                 .then(response => {
                     return new Promise(resolve => response.json()
                         .then(json => resolve({
@@ -118,7 +119,7 @@
                         document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account does not yet exist.';
                     }
                     else {
-                        window.location.replace('http://localhost/');
+                        window.location.replace(`${serverAddress}/`);
                     }
                 })
                 .catch(error => {
@@ -164,7 +165,7 @@
                 body: formData
             };
 
-            fetch(`http://localhost/user/${username}`, fetchSettings)
+            fetch(`${serverAddress}/user/${username}`, fetchSettings)
                 .then(response => {
                     return new Promise(resolve => response.json()
                         .then(json => resolve({
@@ -179,7 +180,7 @@
                         document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account already exists.';
                     }
                     else {
-                        window.location.replace('http://localhost/');
+                        window.location.replace(`${serverAddress}/`);
                     }
                 })
                 .catch(error => {
