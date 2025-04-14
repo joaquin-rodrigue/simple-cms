@@ -38,6 +38,12 @@ app.get('/webpage/',
         let result = {};
         try {
             result = await webpage.getAll(request.query);
+
+            // This shouldn't happen unless the database is empty 
+            // But if the database is empty something probably has gone horribly wrong so...
+            if (result.length < 1) {
+                return response.status(404).json({ message: "SOMETHING HAS GONE HORRIBLY WRONG OH NO" });
+            }
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -53,6 +59,10 @@ app.get('/webpage/:id/',
         let result = {};
         try {
             result = await webpage.get(request.id, request.query);
+        
+            if (result.length < 1) {
+                return response.status(404).json({ message: "No data was found in the database." });
+            }
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -62,14 +72,25 @@ app.get('/webpage/:id/',
 );
 
 // POST new page
-app.post('/webpage/:id/',
+app.post('/webpage/',
     upload.none(),
     async (request, response) => {
         let result = {};
         try {
-            result = await webpage.insert(request.id, request.query);
+            if (typeof request.body.name !== 'string' || request.body.name.length === 0) {
+                return response.status(400).json({ message: "Invalid name for webpage" });
+            }
+            if (typeof request.body.owner === 'undefined' || parseInt(request.body.owner) < 0) {
+                return response.status(400).json({ message: "Invalid user ID for webpage" });
+            }
+
+            result = await webpage.insert(request.body);
+
+            // Create the stylesheet for this page too
+            await stylesheet.insert(request.body);
         }
         catch (error) {
+            console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -114,6 +135,10 @@ app.get('/styles/:id/',
         let result = {};
         try {
             result = await stylesheet.get(request.id, request.query);
+        
+            if (result.length < 1) {
+                return response.status(404).json({ message: "No data was found in the database." });
+            }
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -123,11 +148,18 @@ app.get('/styles/:id/',
 );
 
 // POST new stylesheet
-app.post('/styles/:id/',
+app.post('/styles/',
     upload.none(),
     async (request, response) => {
         let result = {};
         try {
+            if (typeof request.body.name !== 'string' || request.body.name.length === 0) {
+                return response.status(400).json({ message: "Invalid name for webpage" });
+            }
+            if (typeof request.body.owner !== 'number' || request.body.owner < 0) {
+                return response.status(400).json({ message: "Invalid user ID for webpage" });
+            }
+
             result = await stylesheet.insert(request.id, request.query);
         }
         catch (error) {
@@ -177,6 +209,10 @@ app.get('/user/:id/',
         try {
             result = await user.get(request.id, request.query);
             
+            if (result.length < 1) {
+                return response.status(404).json({ message: "No data returned by database." });
+            }
+
             // Determine if this was a login or just a user request
             if (typeof result[0].password !== 'undefined' && result[0].password.length > 0) {
                 // TODO: cookies for login
@@ -192,7 +228,7 @@ app.get('/user/:id/',
 );
 
 // POST new user
-app.post('/user/:id/',
+app.post('/user/',
     upload.none(),
     async (request, response) => {
         let result = {};
@@ -249,6 +285,10 @@ app.get('/file/',
         let result = {};
         try {
             result = await file.getAll(request.query);
+
+            if (result.length < 1) {
+                return response.status(404).json({ message: "No data was found in the database." });
+            }
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -264,6 +304,10 @@ app.get('/file/:id/',
         let result = {};
         try {
             result = await file.get(request.id, request.query);
+        
+            if (result.length < 1) {
+                return response.status(404).json({ message: "No data was found in the database." });
+            }
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -273,7 +317,7 @@ app.get('/file/:id/',
 );
 
 // POST new file
-app.post('/file/:id/',
+app.post('/file/',
     upload.none(),
     async (request, response) => {
         let result = {};

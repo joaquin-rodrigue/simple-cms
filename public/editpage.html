@@ -67,7 +67,7 @@
     <script>
         // Only display page editor if logged in
         if (!document.cookie.includes('simplecmsloggedin')) {
-            return;
+            // don't continue
         }
 
         // TODO: get the page details from the database
@@ -118,6 +118,7 @@
         document.getElementById('page').innerHTML = body;
 
         // --- HELPFUL FUNCTIONS ---
+        // Closes all popups
         const closePopups = () => {
             document.getElementById('error-popup').hidden = true;
             document.getElementById('select-new-popup').hidden = true;
@@ -165,14 +166,16 @@
             document.getElementById('select-new-popup').hidden = true;
             document.getElementById('place-new-element').hidden = false;
             document.getElementById('place-new-element').innerHTML = `<${element}></${element}>`;
-
+            document.getElementById('place-new-element').addEventListener('click', addElementToPage(event, element));
         }
 
         // This is the function that does the work
-        const addElementToPage = element => {
+        const addElementToPage = (event, element) => {
             // element is literally the name of the html tag; i.e.
             // if element = p, then this will generate a <p> element
-            
+            // realizing I'm not quite sure how to move the element to a specific part of
+            // the page, so for now, I'm going to make it so the user can add elements on
+            // to the end of a page/container
         }
     </script>
 </body>

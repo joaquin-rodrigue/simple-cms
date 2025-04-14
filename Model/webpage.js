@@ -11,25 +11,27 @@ const sqlString = require('sqlstring');
 // (I am *slightly* concerned that using a LIKE %something% for the entire
 // page content is going to be horrible for performance though...)
 async function getAll(parameters = {}) {
-    let selectSql = `SELECT * FROM webpage`, 
+    let selectSql = `SELECT w.*, u.username 
+                    FROM webpage w 
+                    INNER JOIN user u ON w.owner = u.id`, 
     where = [],
     orderBy = [],
     queryParameters = [];
 
     // name
     if (typeof parameters.name !== 'undefined' && parameters.name.length > 0) {
-        where.push('name LIKE ?');
+        where.push('w.name LIKE ?');
         queryParameters.push(`%${parameters.name}%`);
     }
     // content
     if (typeof parameters.body !== 'undefined' && parameters.body.length > 0) {
-        where.push('body LIKE ?');
+        where.push('w.body LIKE ?');
         queryParameters.push(`%${parameters.body}%`);
     }
     // owner
     // I'm not sure if sqlString.escape() is necessary if someone tries to escape the number field, it's going throuhg a parseInt call so I would assume its fine
     if (typeof parameters.owner !== 'undefined' && parseInt(parameters.owner) > -1) {
-        where.push('owner = ?');
+        where.push('w.owner = ?');
         queryParameters.push(parameters.owner);
     }
     // sorting
@@ -58,16 +60,24 @@ async function getAll(parameters = {}) {
 // with anything else regardless
 async function get(id, parameters = {}) {
     let selectSql = `SELECT *
-                    FROM webpage
-                    WHERE id = ${sqlString.escape(id)}`, 
-    queryParameters = [];
+                    FROM webpage w
+                    INNER JOIN stylesheet s ON w.stylesheet = s.id
+                    WHERE w.id = ?`, 
+    queryParameters = [id];
 
     return await connection.query(selectSql, queryParameters);
 }
 
 // --- INSERT ---
+// I'm only inserting the webpage name and owner
+// Since these have already been validated as existing by the server, I'll 
+// finish the insert normally I guess
 async function insert(parameters = {}) {
-    let selectSql = ``, queryParameters = [];
+    let selectSql = `INSERT INTO webpage (name, owner)
+                    VALUES (?, ?)`, 
+    queryParameters = [parameters.name, parameters.owner];
+    console.log(parameters.name, parameters.owner);
+
     return await connection.query(selectSql, queryParameters);
 }
 

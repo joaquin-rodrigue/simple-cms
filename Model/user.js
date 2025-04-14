@@ -13,16 +13,17 @@ async function get(id, parameters = {}) {
     // id; optional
     if (typeof parameters.id !== 'undefined' && parseInt(parameters.id) > -1) {
         where.push(`id = ?`);
-        queryParameters.push(sqlString.escape(parameters.id));
+        queryParameters.push(parameters.id);
     }
     // username
     if (typeof parameters.username !== 'undefined' && parameters.username.length > 0) {
         where.push(`username = ?`);
-        queryParameters.push(sqlString.escape(parameters.username));
+        queryParameters.push(parameters.username);
     }
     // password
     if (typeof parameters.password !== 'undefined' && parameters.password.length > 0) {
         let encryptedPassword = crypto.createHash('sha256').update(parameters.password).digest('base64');
+        //console.log(encryptedPassword);
         where.push(`password = ?`);
         queryParameters.push(encryptedPassword);
     }
@@ -46,7 +47,11 @@ async function get(id, parameters = {}) {
 
 // --- INSERT ---
 async function insert(parameters = {}) {
-    let selectSql = ``, queryParameters = [];
+    let encryptedPassword = crypto.createHash('sha256').update(parameters.password).digest('base64');
+    let selectSql = `INSERT INTO user (username, password)
+            VALUES (?, ?)`, 
+    queryParameters = [parameters.username, encryptedPassword];
+
     return await connection.query(selectSql, queryParameters);
 }
 
