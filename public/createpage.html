@@ -57,6 +57,7 @@
         // Display content if logged in
         if (document.cookie.includes('simplecmsloggedin')) {
             document.querySelector('.not-logged-in').hidden = true;
+            document.querySelector('.not-logged-in').innerHTML = "";
             document.querySelector('.logged-in').hidden = false;
 
             // Submit button
@@ -107,13 +108,16 @@
                             document.getElementById('submit-error').innerHTML = "Server couldn't process the request";
                         }
                         else {
-                            window.location.replace(`${serverAddress}/mypages.html/`);
+                            window.location.replace(`mypages.html`);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                     });
             });
+        }
+        else {
+            document.querySelector('.logged-in').innerHTML = "";
         }
     </script>
 </body>

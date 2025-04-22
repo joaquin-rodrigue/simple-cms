@@ -64,6 +64,7 @@ async function get(id, parameters = {}) {
                     INNER JOIN stylesheet s ON w.stylesheet = s.id
                     WHERE w.id = ?`, 
     queryParameters = [id];
+    console.log(selectSql);
 
     return await connection.query(selectSql, queryParameters);
 }
@@ -73,10 +74,10 @@ async function get(id, parameters = {}) {
 // Since these have already been validated as existing by the server, I'll 
 // finish the insert normally I guess
 async function insert(parameters = {}) {
-    let selectSql = `INSERT INTO webpage (name, owner)
-                    VALUES (?, ?)`, 
-    queryParameters = [parameters.name, parameters.owner];
-    console.log(parameters.name, parameters.owner);
+    let selectSql = `INSERT INTO webpage (name, owner, stylesheet)
+                    VALUES (?, ?, ?)`, 
+    queryParameters = [parameters.name, parameters.owner, parameters.stylesheet];
+    //console.log(parameters.name, parameters.owner, parameters.stylesheet);
 
     return await connection.query(selectSql, queryParameters);
 }

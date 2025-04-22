@@ -1,3 +1,7 @@
+body {
+    background: linear-gradient(90deg,steelblue 0%, rgb(35, 188, 219) 100%);
+}
+
 /* TODO: change this to use flexbox instead */
 .title-banner h1, .title-footer {
     padding-top: 10%;
@@ -33,17 +37,42 @@ a:hover {
     font-weight: 500;
 }
 
-.account-form input, .account-form button {
+.account-form input, .account-form button, .search-form input, .search-form button, .serach-form select, 
+.webpage-form input, .webpage-form button {
     max-width: 30%;
+    background-color: rgba(180, 187, 208, 1);
 }
 
-.not-logged-in {
+.account-form button:hover, .search-form button:hover {
+    background-color: rgb(201, 214, 255);
+}
+
+.not-logged-in, .page-not-found {
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     height: 100vh;
+}
+
+.error-active {
+    background-color: rgb(233, 120, 120);
+}
+
+.error-inactive {
+    background-color: none;
+}
+
+#pages-table {
+    background-color: lightblue;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 30px;
+}
+
+#pages-table thead {
+    background-color: white;
 }
 
 @media screen and (max-width: 800px) {

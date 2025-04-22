@@ -56,15 +56,19 @@ app.get('/webpage/',
 app.get('/webpage/:id/',
     upload.none(),
     async (request, response) => {
+        //console.log('its in the right room');
         let result = {};
         try {
-            result = await webpage.get(request.id, request.query);
+            console.log(request.params.id);
+            //console.log(request);
+            result = await webpage.get(request.params.id, request.query);
         
             if (result.length < 1) {
                 return response.status(404).json({ message: "No data was found in the database." });
             }
         }
         catch (error) {
+            console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -84,10 +88,16 @@ app.post('/webpage/',
                 return response.status(400).json({ message: "Invalid user ID for webpage" });
             }
 
-            result = await webpage.insert(request.body);
+            // I'm creating the stylesheet first so we can use its ID to link to the webpage
+            await stylesheet.insert(request.body);
+            console.log('waited');
+
+            // Select the newly created stylesheet
+            let theID = await stylesheet.getAll({ name: request.body.name });
+
+            result = await webpage.insert({ ...request.body, stylesheet: theID['0'].id });
 
             // Create the stylesheet for this page too
-            await stylesheet.insert(request.body);
         }
         catch (error) {
             console.error(error);

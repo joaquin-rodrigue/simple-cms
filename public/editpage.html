@@ -20,18 +20,18 @@
 </head>
 
 <body>
-    <div class="container not-logged-in">
+    <div class="container not-logged-in" id="not-logged-in" hidden>
         <h1>You aren't logged in</h1>
         <h3><a href="login.html">Please log in here</a></h3>
     </div>
 
-    <div class="container page-not-found" hidden>
+    <div class="container page-not-found" id="page-not-found" hidden>
         <h1>Page not found</h1>
         <h3><a href="createpage.html">Create this page</a></h3>
         <h3><a href="index.html">Back to Home</a></h3>
     </div>
 
-    <div class="edit-page" hidden>
+    <div class="edit-page" id="edit-page" hidden>
         <!-- Thinking of putting this in an IFrame? -->
         <!-- I'm not quite sure how to do this but -->
         <header class="tools" id="tools">
@@ -66,63 +66,78 @@
 
     <script>
         // Only display page editor if logged in
-        if (!document.cookie.includes('simplecmsloggedin')) {
-            // don't continue
-        }
+        if (document.cookie.includes('simplecmsloggedin')) {
+            // get the page details from the database
+            document.getElementById('not-logged-in').hidden = true;
+            document.getElementById('not-logged-in').innerHTML = "";
+            let fetchSettings = {
+                method: 'GET'
+            };
+            const pageId = new URLSearchParams(window.location.search).get('id');
+            //console.log(pageId);
+            let title, head, body;
 
-        // TODO: get the page details from the database
-        document.getElementById('not-logged-in').hidden = true;
-        let fetchSettings = {
-            method: 'GET'
-        };
-        const pageId = new URLSearchParams(window.location.search).get('id');
-        let title, head, body;
-
-        if (typeof pageId !== 'string' || pageId.length === 0) {
-            document.querySelector('page-not-found').hidden = false;
-            return;
-        }
-
-        // I'm thinking the page id will be passed via the URL
-        fetch(`${serverAddress}/webpage/${pageId}`, fetchSettings)
-            .then(response => {
-                return new Promise(resolve => response.json()
-                    .then(json => resolve({
-                        status: response.status,
-                        json,
+            if (typeof pageId !== 'string' || pageId.length === 0) {
+                document.getElementById('page-not-found').hidden = false;
+                console.log(`couldn't find the id, it looks like this: ${pageId} and is ${typeof(pageId)}`);
+                document.getElementById('edit-page').innerHTML = "";
+            }
+            else {
+                // I'm thinking the page id will be passed via the URL
+                //console.log(`${serverAddress}/webpage/${pageId}`);
+                fetch(`${serverAddress}/webpage/${pageId}`, fetchSettings)
+                    .then(response => {
+                        return new Promise(resolve => response.json()
+                            .then(json => resolve({
+                                status: response.status,
+                                json,
+                            })
+                        ));
                     })
-                ));
-            })
-            .then(({ status, json }) => {
-                if (status === 200 && json.data?.owner === locateID(document.cookie)) {
-                    title = json.data.name;
-                    head = json.data.head;
-                    body = json.data.body;
-                    document.querySelector('edit-page').hidden = false;
-                }
-                else {
-                    document.querySelector('page-not-found').hidden = false;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // I kinda don't know what to do here so I'm redirecting
-                window.location.replace('index.html');
-            });
-
-        if (!body) {
-            return;
+                    .then(({ status, json }) => {
+                        // i hate types in js
+                        if ((status === 200 || status === 304) && json.data['0'].owner == locateID(document.cookie)) {
+                            title = json.data['0'].name;
+                            head = json.data['0'].head;
+                            body = json.data['0'].body;
+                            document.getElementById('edit-page').hidden = false;
+                            document.getElementById('page-not-found').innerHTML = "";
+                            // Hooray we have page data
+                            document.getElementById('page').innerHTML = body;
+                            document.getElementById('save-and-quit').addEventListener('click', saveAndQuit);
+                            document.getElementById('new-content').addEventListener('click', newContent);
+                            document.getElementById('add-text').addEventListener('click', placeTextOnPage);
+                            document.getElementById('add-header').addEventListener('click', placeHeaderOnPage);
+                            document.getElementById('add-image').addEventListener('click', placeImageOnPage);
+                            document.getElementById('add-section').addEventListener('click', placeSectionOnPage);
+                            document.getElementById('add-list').addEventListener('click', placeListOnPage);
+                        }
+                        else {
+                            document.getElementById('page-not-found').hidden = false;
+                            console.log(`couldnt find the thingy, data owner: ${json.data['0'].owner}, cookie: ${locateID(document.cookie)}`)
+                            document.getElementById('edit-page').innerHTML = "";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // I kinda don't know what to do here so I'm redirecting
+                        //window.location.replace('index.html');
+                    });
+            }
+            
         }
-
-        // Hooray we have page data
-        document.getElementById('page').innerHTML = body;
+        else {
+            document.getElementById('not-logged-in').hidden = false;
+            document.getElementById('page-not-found').innerHTML = "";
+            document.getElementById('edit-page').innerHTML = "";
+        } 
 
         // --- HELPFUL FUNCTIONS ---
         // Closes all popups
         const closePopups = () => {
             document.getElementById('error-popup').hidden = true;
             document.getElementById('select-new-popup').hidden = true;
-
+            document.getElementById('place-new-element').hidden = true;
             // ... add other popups to close here
         }
 
@@ -161,21 +176,57 @@
             document.getElementById('select-new-popup').hidden = false;
         }
 
-        // Lets the user place an element on the page
-        const placeElementOnPage = element => {
+        // Lets the user place an element on the page - this also doesn't do the work, or at least it only does some of it
+        const placeTextOnPage = () => {
             document.getElementById('select-new-popup').hidden = true;
             document.getElementById('place-new-element').hidden = false;
-            document.getElementById('place-new-element').innerHTML = `<${element}></${element}>`;
-            document.getElementById('place-new-element').addEventListener('click', addElementToPage(event, element));
+            document.getElementById('place-new-element').innerHTML = `
+                <input type='text' placeholder='Type to enter text, click to add to page'>`;
+            document.getElementById('page').addEventListener('click', addElementToPage(event));
+        }
+        const placeHeaderOnPage = () => {
+            document.getElementById('select-new-popup').hidden = true;
+            document.getElementById('place-new-element').hidden = false;
+            document.getElementById('place-new-element').innerHTML = `
+                <p>Header type:</p>
+                <ul>
+                    <li>H1</l1>
+                    <li>H2</li>
+                    <li>H3</li>
+                    <li>H4</li>
+                    <li>H5</li>
+                    <li>H6</li>
+                </ul>
+                <input type="text" placeholder='Type to enter text, click to add to page'>`;
+            document.getElementById('page').addEventListener('click', addElementToPage(event))
+        }
+        // ---- TOODODODODODODODOODODKOGSOIOEINJOVNWEJFOIWEIOFJIWOEJFOEWJFOIEWJFOIJEWOIFJEWIOKFJIEWJFOIEWFEWJIFEW ----
+        const placeImageOnPage = () => {
+            document.getElementById('select-new-popup').hidden = true;
+            document.getElementById('place-new-element').hidden = false;
+            document.getElementById('place-new-element').innerHTML = `
+                <p>TODO: image placer, sorry!</p>`;
+        }
+        const placeSectionOnPage = () => {
+            document.getElementById('select-new-popup').hidden = true;
+            document.getElementById('place-new-element').hidden = false;
+            document.getElementById('place-new-element').innerHTML = `
+                <p>Click to place on page</p>`;
+        }
+        const placeListOnPage = () => {
+
         }
 
         // This is the function that does the work
-        const addElementToPage = (event, element) => {
+        const addElementToPage = (event) => {
             // element is literally the name of the html tag; i.e.
             // if element = p, then this will generate a <p> element
             // realizing I'm not quite sure how to move the element to a specific part of
             // the page, so for now, I'm going to make it so the user can add elements on
             // to the end of a page/container
+            document.getElementById('page').removeEventListener('click');
+            let element = document.getElementById('place-new-element'); // literally just this element
+            let x = event.x, y = event.y;
         }
     </script>
 </body>

@@ -27,26 +27,26 @@
         </header>
 
         <div class="row">
-            <p class="error login-error" id="login-error">&nbsp;</p>
+            <p class="error-inactive login-error" id="login-error">&nbsp;</p>
         </div>
 
         <main class="row account-form">
             <div class="row">
                 <label for="username">Username</label>
                 <input name="username" id="username" type="text">
-                <label class="error username-error" id="username-error">&nbsp;</label>
+                <label class="error-inactive username-error" id="username-error">&nbsp;</label>
             </div>
 
             <div class="row">
                 <label for="password">Password</label>
                 <input name="password" id="password" type="password">
-                <label class="error password-error" id="password-error">&nbsp;</label>
+                <label class="error-inactive password-error" id="password-error">&nbsp;</label>
             </div>
 
             <div class="row">
                 <label for="confirm">Confirm Password</label>
                 <input name="confirm" id="confirm" type="password">
-                <label class="error confirm-error" id="confirm-error">&nbsp;</label>
+                <label class="error-inactive confirm-error" id="confirm-error">&nbsp;</label>
             </div>
 
             <div class="row">
@@ -72,23 +72,28 @@
             document.getElementById('confirm-error').innerHTML = '&nbsp;';
             document.getElementById('username-error').innerHTML = '&nbsp;';
             document.getElementById('login-error').innerHTML = '&nbsp;';
+            Array.from(document.getElementsByClassName('error-active')).forEach(element => { element.classList.replace('error-active', 'error-inactive') });
 
             // Error checks before sending
             if (password.length === 0) {
                 // ERROR
                 document.getElementById('password-error').innerHTML = "Please enter a password.";
+                document.getElementById('password-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
             if (password.length > 127) {
                 document.getElementById('password-error').innerHTML = "Please enter a shorter password.";
+                document.getElementById('password-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
             if (username.length === 0) {
                 document.getElementById('username-error').innerHTML = "Please enter a username.";
+                document.getElementById('username-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
             if (username.length > 127) {
                 document.getElementById('username-error').innerHTML = "Please enter a shorter username.";
+                document.getElementById('username-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
 
@@ -117,6 +122,7 @@
                     // something something error messages
                     if (!json.data) {
                         document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account does not yet exist.';
+                        document.getElementById('login-error').classList.replace('error-inactive', 'error-active');
                     }
                     else {
                         window.location.replace(`${serverAddress}/`);
@@ -124,6 +130,7 @@
                 })
                 .catch(error => {
                     document.getElementById('login-error').innerHTML = 'Something went wrong, please try again.';
+                    document.getElementById('login-error').classList.replace('error-inactive', 'error-active');
                     console.error('Error:', error);
                 });
         });
@@ -138,20 +145,25 @@
             document.getElementById('confirm-error').innerHTML = '&nbsp;';
             document.getElementById('username-error').innerHTML = '&nbsp;';
             document.getElementById('login-error').innerHTML = '&nbsp;';
+            Array.from(document.getElementsByClassName('error-active')).forEach(element => { element.classList.replace('error-active', 'error-inactive') });
 
             // Error checks before sending
             if (password !== confirmPassword) {
                 // ERROR
                 document.getElementById('password-error').innerHTML = "Password does not match!";
                 document.getElementById('confirm-error').innerHTML = "Password does not match!";
+                document.getElementById('password-error').classList.replace('error-inactive', 'error-active');
+                document.getElementById('confirm-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
             if (password.length === 0) {
                 document.getElementById('password-error').innerHTML = "Please enter a password.";
+                document.getElementById('password-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
             if (username.length === 0) {
                 document.getElementById('username-error').innerHTML = "Please enter a username.";
+                document.getElementById('username-error').classList.replace('error-inactive', 'error-active');
                 return;
             }
 
@@ -178,12 +190,15 @@
                     // something something error messages
                     if (!json.data) {
                         document.getElementById('login-error').innerHTML = 'Invalid username or password, or that account already exists.';
+                        document.getElementById('login-error').classList.replace('error-inactive', 'error-active');
                     }
                     else {
                         window.location.replace(`${serverAddress}/`);
                     }
                 })
                 .catch(error => {
+                    document.getElementById('login-error').innerHTML = 'Something went wrong, please try again.';
+                    document.getElementById('login-error').classList.replace('error-inactive', 'error-active');
                     console.error('Error:', error);
                 });
         });

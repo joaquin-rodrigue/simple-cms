@@ -32,7 +32,7 @@
         </header>
 
         <main class="row">
-            <div class="container">
+            <div class="container search-form">
                 <div class="row">
                     <div class="col-md-3">
                         <label for="searchname">Search by Name</label>
@@ -92,7 +92,7 @@
                 for (row of json.data) {
                     table += `<tr>
                         <td>${row.name}</td>
-                        <td><a hre</td>
+                        <td><a href="editpage.html?${new URLSearchParams({ id: row.id })}">Edit</a></td>
                         <td>WIP</td>    
                     </tr>`;
                 }
@@ -185,16 +185,23 @@
                         // Turn on the page
                         document.getElementById('logged-in').hidden = false;
                         document.getElementsByClassName('not-logged-in')[0].hidden = true;
+                        document.getElementsByClassName('not-logged-in')[0].innerHTML = "";
                         document.getElementById('user-header').innerHTML = `${username}'s Content`;
 
                         // Search button + search all on load
                         document.getElementById('search').addEventListener('click', search);
                         search();
                     }
+                    else {
+                        document.getElementById('logged-in').innerHTML = "";
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
+        }
+        else {
+            document.getElementById('logged-in').innerHTML = "";
         }
     </script>
 </body>

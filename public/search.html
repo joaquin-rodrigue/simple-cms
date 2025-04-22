@@ -27,7 +27,7 @@
         </header>
 
         <main class="row">
-            <div class="container">
+            <div class="container search-form">
                 <div class="row">
                     <div class="col-md-3">
                         <label for="searchname">Search by Name</label>
@@ -70,6 +70,15 @@
                             <option value="ASC">Ascending</option>
                             <option value="DESC">Descending</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <dv class="col-md-3">
+                        <label for="limit">Page Size</label>
+                    </dv>
+                    <div class="col-md-9">
+                        <input type="number" name="limit" id="limit">
                     </div>
                 </div>
 
@@ -137,6 +146,9 @@
             }
             if (document.getElementById('order').value.length !== 0) {
                 getParameters.order = document.getElementById('order').value;
+            }
+            if (document.getElementById('limit').value.length !== 0 && document.getElementById('limit').value > 0) {
+                getParameters.limit = document.getElementById('limit').value;
             }
 
             // Fetch request
