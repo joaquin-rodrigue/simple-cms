@@ -40,13 +40,14 @@ async function get(id, parameters = {}) {
     if (where.length > 0) {
         selectSql += ` WHERE ${where.join(' AND ')}`;
     }
-    console.log(selectSql);
+    //console.log(selectSql);
 
     return await connection.query(selectSql, queryParameters);
 }
 
 // --- INSERT ---
 async function insert(parameters = {}) {
+    //console.log(parameters.password)
     let encryptedPassword = crypto.createHash('sha256').update(parameters.password).digest('base64');
     let selectSql = `INSERT INTO user (username, password)
             VALUES (?, ?)`, 

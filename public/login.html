@@ -140,6 +140,7 @@
             let username = document.getElementById('username').value;
             let password = document.getElementById('password').value;
             let confirmPassword = document.getElementById('password').value;
+            console.log(username, password, confirmPassword);
 
             document.getElementById('password-error').innerHTML = '&nbsp;';
             document.getElementById('confirm-error').innerHTML = '&nbsp;';
@@ -177,7 +178,7 @@
                 body: formData
             };
 
-            fetch(`${serverAddress}/user/${username}`, fetchSettings)
+            fetch(`${serverAddress}/user/`, fetchSettings)
                 .then(response => {
                     return new Promise(resolve => response.json()
                         .then(json => resolve({

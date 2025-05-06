@@ -34,9 +34,14 @@ async function getAll(parameters = {}) {
         where.push('w.owner = ?');
         queryParameters.push(parameters.owner);
     }
+    // username
+    if (typeof parameters.username !== 'undefined' && parameters.username.length > 0) {
+        where.push('u.username LIKE ?');
+        queryParameters.push(`%${parameters.username}%`);
+    }
     // sorting
     if (typeof parameters.sort !== 'undefined') {
-        orderBy.push(`${sqlString.escape(parameters.sort)} ${sqlString.escape(parameters.order)}`);
+        orderBy.push(`${parameters.sort} ${parameters.order === 'DESC' ? 'DESC' : 'ASC'}`);
     }
 
     // Add statements together
@@ -51,7 +56,7 @@ async function getAll(parameters = {}) {
     }
 
     console.log(selectSql);
-    console.log(queryParameters);
+    //console.log(queryParameters);
     return await connection.query(selectSql, queryParameters);
 }
 
@@ -64,7 +69,7 @@ async function get(id, parameters = {}) {
                     INNER JOIN stylesheet s ON w.stylesheet = s.id
                     WHERE w.id = ?`, 
     queryParameters = [id];
-    console.log(selectSql);
+    //console.log(selectSql);
 
     return await connection.query(selectSql, queryParameters);
 }
@@ -84,7 +89,9 @@ async function insert(parameters = {}) {
 
 // --- EDIT ---
 async function edit(id, parameters = {}) {
-    let selectSql = ``, queryParameters = [];
+    let selectSql = `UPDATE webpage SET body = ?, head = ? WHERE id = ?`, 
+    queryParameters = [parameters.body, parameters.head, id];
+    //console.log(queryParameters);
     return await connection.query(selectSql, queryParameters);
 }
 

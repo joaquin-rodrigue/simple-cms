@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const multer = require('multer');
 const { check, checkSchema, validationResult } = require('express-validator');
+const crypto = require('crypto');
 
 const webpage = require("./Model/webpage");
 const stylesheet = require("./Model/stylesheet");
@@ -34,6 +35,11 @@ const port = 80;
 // GET all pages
 app.get('/webpage/',
     upload.none(),
+    // I didn't want to check some of the values in cas the user doesn't want
+    // to set a search filter, so only some of the ones that need to be 
+    // within a certain set are here
+    check('sort', 'Please enter a column name.').isIn(['w.name', 'u.username']),
+    check('order', 'Please enter either ASC or DESC.').isIn(['ASC', 'DESC']),
     async (request, response) => {
         let result = {};
         try {
@@ -46,6 +52,7 @@ app.get('/webpage/',
             }
         }
         catch (error) {
+            console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -55,11 +62,12 @@ app.get('/webpage/',
 // GET page by id
 app.get('/webpage/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         //console.log('its in the right room');
         let result = {};
         try {
-            console.log(request.params.id);
+            //console.log(request.params.id);
             //console.log(request);
             result = await webpage.get(request.params.id, request.query);
         
@@ -68,29 +76,58 @@ app.get('/webpage/:id/',
             }
         }
         catch (error) {
-            console.error(error);
+            //console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
     }
 );
 
+// GET page for rendering purposes
+app.get('/webpage/render/:id/',
+    upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
+    async (request, response) => {
+        let result = ``;
+        try {
+            //console.log(request.params.id);
+
+            let data = await webpage.get(request.params.id, request.query);
+
+            // construct the returned webpage
+            //console.log(data);
+            let body = data['0'].body, head = data['0'].head, stylesheet = data['0'].stylesheet, name = data['0'].name;
+
+            result = `<html>
+                <head>
+                    <link href="/styles/render/${stylesheet}" rel="stylesheet" type="text/css">
+                    <title>${name}</title>
+                    ${head || ""}
+                </head>
+                <body>
+                    ${body}
+                </body>
+                </html>`;
+        }
+        catch (error) {
+            //console.error(error);
+            return response.status(500).json({ message: "Server error while querying database." });
+        }
+        response.send(result);
+    }
+)
+
 // POST new page
 app.post('/webpage/',
     upload.none(),
+    check('name', 'Please enter a string less than 50 characters long.').isAlphanumeric().isLength({ min: 1, max: 50 }),
+    check('owner', 'Please enter a positive integer.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            if (typeof request.body.name !== 'string' || request.body.name.length === 0) {
-                return response.status(400).json({ message: "Invalid name for webpage" });
-            }
-            if (typeof request.body.owner === 'undefined' || parseInt(request.body.owner) < 0) {
-                return response.status(400).json({ message: "Invalid user ID for webpage" });
-            }
-
             // I'm creating the stylesheet first so we can use its ID to link to the webpage
             await stylesheet.insert(request.body);
-            console.log('waited');
+            //console.log('waited');
 
             // Select the newly created stylesheet
             let theID = await stylesheet.getAll({ name: request.body.name });
@@ -100,7 +137,7 @@ app.post('/webpage/',
             // Create the stylesheet for this page too
         }
         catch (error) {
-            console.error(error);
+            //console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -110,12 +147,16 @@ app.post('/webpage/',
 // PUT webpage
 app.put('/webpage/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
+    check('body', 'The maximum size string is 65536 right now, please keep it under that.').isLength({ max: 65535 }),
+    check('head', 'The maximum size string is 65536 right now, please keep it under that.').isLength({ max: 65535 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await webpage.edit(request.id, request.query);
+            result = await webpage.edit(request.params.id, request.body);
         }
         catch (error) {
+            //console.log(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -125,10 +166,11 @@ app.put('/webpage/:id/',
 // DELETE webpage
 app.delete('/webpage/:id/',
     upload.none(),
+    check('id', 'Please speicfy a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await webpage.delete(request.id, request.query);
+            result = await webpage.delete(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -138,13 +180,14 @@ app.delete('/webpage/:id/',
 );
 
 // --- STYLESHEETS ---
-// GET stylesheets (no need to get all at once)
+// GET stylesheets (no public need to get all at once)
 app.get('/styles/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await stylesheet.get(request.id, request.query);
+            result = await stylesheet.get(request.params.id, request.query);
         
             if (result.length < 1) {
                 return response.status(404).json({ message: "No data was found in the database." });
@@ -157,20 +200,35 @@ app.get('/styles/:id/',
     }
 );
 
-// POST new stylesheet
-app.post('/styles/',
+// GET stylesheet for rendering
+app.get('/styles/render/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            if (typeof request.body.name !== 'string' || request.body.name.length === 0) {
-                return response.status(400).json({ message: "Invalid name for webpage" });
-            }
-            if (typeof request.body.owner !== 'number' || request.body.owner < 0) {
-                return response.status(400).json({ message: "Invalid user ID for webpage" });
-            }
+            let data = await stylesheet.get(request.params.id, request.query);
 
-            result = await stylesheet.insert(request.id, request.query);
+            result = data[0].data;
+        }
+        catch (error) {
+            //console.error(error);
+            return response.status(500).json({ message: "Server error while querying database." });
+        }
+
+        response.send(result);
+    }
+)
+
+// POST new stylesheet
+app.post('/styles/',
+    upload.none(),
+    check('name', 'Please enter a valid string less than 50 characters long.').isAlphanumeric().isLength({ min: 1, max: 50 }),
+    check('owner', 'Please enter a positive integer.').isInt({ min: 0 }),
+    async (request, response) => {
+        let result = {};
+        try {
+            result = await stylesheet.insert(request.body);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -182,10 +240,12 @@ app.post('/styles/',
 // PUT stylesheet
 app.put('/styles/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
+    check('data', 'Please keep the data string less than 65536 characters.').isLength({ max: 65535 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await stylesheet.edit(request.id, request.query);
+            result = await stylesheet.edit(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -197,10 +257,11 @@ app.put('/styles/:id/',
 // DELETE stylesheet
 app.delete('/styles/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await stylesheet.delete(request.id, request.query);
+            result = await stylesheet.delete(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -214,10 +275,11 @@ app.delete('/styles/:id/',
 // Also works as a LOGIN feature
 app.get('/user/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await user.get(request.id, request.query);
+            result = await user.get(request.params.id, request.query);
             
             if (result.length < 1) {
                 return response.status(404).json({ message: "No data returned by database." });
@@ -230,7 +292,7 @@ app.get('/user/:id/',
             }
         }
         catch (error) {
-            console.error(error);
+            //console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -240,17 +302,22 @@ app.get('/user/:id/',
 // POST new user
 app.post('/user/',
     upload.none(),
+    check('username', 'Please enter a string username between 1 and 128 characters long.').isAlphanumeric().isLength({ min: 1, max: 128 }),
+    check('password', 'Please enter a string password between 1 and 128 characters long.').isAlphanumeric().isLength({ min: 1, max: 128 }),
     async (request, response) => {
         let result = {};
         try {
-            console.log("body: ", request);
-            let username = request.body.username;
-            let password = request.body.password;
-            let encryptedPassword = hash.update(password).digest('base64');
-            console.log(encryptedPassword);
-            result = await user.insert(request.id, request.query);
+            //console.log(request.body.username, request.body.password);
+            //console.log(request.query);
+            result = await user.insert(request.body);
+            //console.log(result.affectedRows);
+            if (result.affectedRows === 1) {
+                // To set the cookie we use the insertID we get from the insert data
+                response.cookie('simplecmsloggedin', result.insertId, { maxAge: 20000000 });
+            }
         }
         catch (error) {
+            //console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -260,10 +327,11 @@ app.post('/user/',
 // PUT user
 app.put('/user/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await user.edit(request.id, request.query);
+            result = await user.edit(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -275,10 +343,11 @@ app.put('/user/:id/',
 // DELETE user
 app.delete('/styles/:id/',
     upload.none(),
+    check('id', 'Please specify a positive integer ID.').isInt({ min: 0 }),
     async (request, response) => {
         let result = {};
         try {
-            result = await user.delete(request.id, request.query);
+            result = await user.delete(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -287,7 +356,7 @@ app.delete('/styles/:id/',
     }
 );
 
-// --- FILES ---
+// --- FILES --- --- UNUSED AS OF NOW ---
 // GET all files
 app.get('/file/',
     upload.none(),
@@ -313,7 +382,7 @@ app.get('/file/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await file.get(request.id, request.query);
+            result = await file.get(request.params.id, request.query);
         
             if (result.length < 1) {
                 return response.status(404).json({ message: "No data was found in the database." });
@@ -332,7 +401,7 @@ app.post('/file/',
     async (request, response) => {
         let result = {};
         try {
-            result = await file.insert(request.id, request.query);
+            result = await file.insert(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -347,7 +416,7 @@ app.put('/file/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await file.edit(request.id, request.query);
+            result = await file.edit(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -362,7 +431,7 @@ app.delete('/file/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await file.delete(request.id, request.query);
+            result = await file.delete(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });

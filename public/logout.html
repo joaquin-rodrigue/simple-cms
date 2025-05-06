@@ -16,6 +16,8 @@
 
     <!-- Page styles -->
     <link href="style.css" rel="stylesheet" type="text/css">
+
+    <script src="globalutils.js"></script>
 </head>
 
 <body>
@@ -29,7 +31,9 @@
         // This feels like the most cursed javascript code Ive ever written
         // I couldn't find how the MDN reference suggests deleting cookies
         // found it: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/cookies/remove
-        browser.cookies.remove({ name: "simplecmsloggedin" });
+        // turns out that's a browser extension method that doesn't work, here's a stack overflow option https://stackoverflow.com/questions/2144386/how-to-delete-a-cookie
+        document.cookie = "simplecmsloggedin=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; domain=" + location.hostname;
+        //browser.cookies.remove({ name: "simplecmsloggedin" });
     </script>
 </body>
 

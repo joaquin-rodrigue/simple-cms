@@ -61,8 +61,8 @@
                     </div>
                     <div class="col-md-5">
                         <select name="sort" id="sort">
-                            <option value="name">Page Name</option>
-                            <option value="owner">Author</option>
+                            <option value="w.name">Page Name</option>
+                            <option value="u.username">Author</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -99,6 +99,7 @@
     <script>
         // Display table function
         const displayTable = ({ status, json }) => {
+            console.log(json);
             document.getElementById('loading-text').hidden = true;
             let table = `<thead>
                 <tr>
@@ -112,8 +113,8 @@
                 for (row of json.data) {
                     table += `<tr>
                         <td>${row.name}</td>
-                        <td>${row.owner}</td>
-                        <td>WIP</td>    
+                        <td>${row.username}</td>
+                        <td><a href=${serverAddress}/webpage/render/${row.id}>Link</a></td>    
                     </tr>`;
                 }
             }
@@ -139,7 +140,7 @@
                 getParameters.body = document.getElementById('searchcontent').value;
             }
             if (document.getElementById('searchowner').value.length !== 0) {
-                getParameters.user = document.getElementById('searchowner').value;
+                getParameters.username = document.getElementById('searchowner').value;
             }
             if (document.getElementById('sort').value.length !== 0) {
                 getParameters.sort = document.getElementById('sort').value;

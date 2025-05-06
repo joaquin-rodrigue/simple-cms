@@ -23,8 +23,8 @@ async function getAll(parameters = {}) {
         selectSql += ` WHERE ${where.join(' AND ')}`;
     }
 
-    console.log(selectSql);
-    console.log(queryParameters);
+    //console.log(selectSql);
+    //console.log(queryParameters);
     return await connection.query(selectSql, queryParameters);
 }
 
@@ -47,7 +47,8 @@ async function insert(parameters = {}) {
 
 // --- EDIT ---
 async function edit(id, parameters = {}) {
-    let selectSql = ``, queryParameters = [];
+    let selectSql = `UPDATE stylesheet SET data = ? WHERE id = ?`, 
+    queryParameters = [parameters.data, id];
     return await connection.query(selectSql, queryParameters);
 }
 
