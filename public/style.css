@@ -38,12 +38,13 @@ a:hover {
 }
 
 .account-form input, .account-form button, .search-form input, .search-form button, .serach-form select, 
-.webpage-form input, .webpage-form button {
+.webpage-form input, .webpage-form button, .tools button, .popup button {
     max-width: 30%;
     background-color: rgba(180, 187, 208, 1);
 }
 
-.account-form button:hover, .search-form button:hover {
+.account-form button:hover, .search-form button:hover, .search-form input, .search-form button, .serach-form select, 
+.webpage-form input, .webpage-form button, .tools button:hover, .popup button:hover {
     background-color: rgb(201, 214, 255);
 }
 
@@ -68,11 +69,54 @@ a:hover {
     background-color: lightblue;
     border-radius: 5px;
     text-align: center;
-    margin-top: 30px;
+    margin: 30px 0px;
 }
 
 #pages-table thead {
     background-color: white;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+}
+
+#edit-page iframe {
+    width: 95vw;
+    height: 95vh;
+    margin: auto;
+    margin-top: 50px;
+}
+
+.popup {
+    position: absolute;
+    margin: auto;
+    top: 5em;
+}
+
+.tools {
+    position: fixed;
+    top: 0;
+}
+
+.tools ul {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100vw;
+    padding: 0px 20px;
+}
+
+.tools ul li {
+    list-style: none;
+    padding: 10px;
+}
+
+.tools ul li button {
+    width: 75px;
+    max-width: 100%;
+}
+
+.tools button, .popup button {
+    border-radius: 10px;
 }
 
 @media screen and (max-width: 800px) {
@@ -89,7 +133,8 @@ a:hover {
         width: 100%;
     }
 
-    .account-form input, .account-form button {
+    .account-form input, .account-form button, .search-form input, .search-form button, .serach-form select, 
+    .webpage-form input, .webpage-form button {
         max-width: 100%;
     }
 }
