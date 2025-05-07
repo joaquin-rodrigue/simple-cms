@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container search">
         <header class="row title-banner">
             <h1>Search all Pages</h1>
             <h3><a href="index.html">Back to Home</a></h3>
@@ -114,7 +114,7 @@
                     table += `<tr>
                         <td>${row.name}</td>
                         <td>${row.username}</td>
-                        <td><a href=${serverAddress}/webpage/render/${row.id}>Link</a></td>    
+                        <td class="page-link"><a href=${serverAddress}/webpage/render/${row.id}>Link</a></td>    
                     </tr>`;
                 }
             }

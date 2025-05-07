@@ -11,9 +11,9 @@ async function get(id, parameters = {}) {
     queryParameters = [];
 
     // id; optional
-    if (typeof parameters.id !== 'undefined' && parseInt(parameters.id) > -1) {
+    if (typeof id !== 'undefined' && parseInt(id) > -1) {
         where.push(`id = ?`);
-        queryParameters.push(parameters.id);
+        queryParameters.push(id);
     }
     // username
     if (typeof parameters.username !== 'undefined' && parameters.username.length > 0) {
@@ -40,7 +40,8 @@ async function get(id, parameters = {}) {
     if (where.length > 0) {
         selectSql += ` WHERE ${where.join(' AND ')}`;
     }
-    //console.log(selectSql);
+    console.log(selectSql);
+    console.log(queryParameters);
 
     return await connection.query(selectSql, queryParameters);
 }

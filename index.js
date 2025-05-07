@@ -292,7 +292,7 @@ app.get('/user/:id/',
             }
         }
         catch (error) {
-            //console.error(error);
+            console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });

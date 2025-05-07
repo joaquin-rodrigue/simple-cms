@@ -25,7 +25,7 @@
         <h3><a href="login.html">Please log in here</a></h3>
     </div>
 
-    <div class="container" id="logged-in" hidden>
+    <div class="container search" id="logged-in" hidden>
         <header class="row title-banner">
             <h1 id="user-header">User's Content</h1>
             <h3><a href="index.html">Back to Home</a></h3>
@@ -83,6 +83,7 @@
             let table = `<thead>
                 <tr>
                     <th>Page Name</th>
+                    <th>Link</th>
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>
@@ -92,8 +93,9 @@
                 for (row of json.data) {
                     table += `<tr>
                         <td>${row.name}</td>
-                        <td><a href="editpage.html?${new URLSearchParams({ id: row.id })}">Edit</a></td>
-                        <td><a href="deletepage.html?${new URLSearchParams({ id: row.id })}">Delete</a></td>    
+                        <td class="page-link"><a href="${serverAddress}/webpage/render/${row.id}">Link</a></td>
+                        <td class="edit-link"><a href="editpage.html?${new URLSearchParams({ id: row.id })}">Edit</a></td>
+                        <td class="delete-link"><a href="deletepage.html?${new URLSearchParams({ id: row.id })}">Delete</a></td>    
                     </tr>`;
                 }
             }
@@ -164,6 +166,7 @@
                 method: 'GET'
             };
             let username = '';
+            console.log(locateID(document.cookie));
 
             // Largest fetch block ever invented
             fetch(`${serverAddress}/user/${locateID(document.cookie)}`, fetchSettings)
@@ -178,6 +181,7 @@
                 .then(({ status, json }) => {
                     if (status === 200 || status === 304) {
                         username = json.data[0].username;
+                        console.log(json.data["0"].id);
                     }
                 })
                 .then(() => {
