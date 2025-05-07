@@ -72,6 +72,8 @@
                             document.getElementById('delete-page').hidden = false;
                             document.getElementById('page-not-found').innerHTML = "";
                             document.getElementById('page-name').innerHTML = json.data['0'].name;
+                            document.getElementById('confirm-delete').addEventListener('click', acceptDelete);
+                            document.getElementById('do-not-delete').addEventListener('click', denyDelete);
                         }
                         else {
                             document.getElementById('page-not-found').hidden = false;

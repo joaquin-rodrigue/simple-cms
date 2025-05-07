@@ -97,7 +97,7 @@ async function edit(id, parameters = {}) {
 
 // --- REMOVE ---
 async function remove(id, parameters = {}) {
-    let selectSql = ``, queryParameters = [];
+    let selectSql = `DELETE FROM webpage WHERE id = ?`, queryParameters = [id];
     return await connection.query(selectSql, queryParameters);
 }
 

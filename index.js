@@ -170,9 +170,10 @@ app.delete('/webpage/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await webpage.delete(request.params.id, request.query);
+            result = await webpage.remove(request.params.id, request.query);
         }
         catch (error) {
+            console.error(error);
             return response.status(500).json({ message: "Server error while querying database." });
         }
         response.json({ 'data': result });
@@ -261,7 +262,7 @@ app.delete('/styles/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await stylesheet.delete(request.params.id, request.query);
+            result = await stylesheet.remove(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -347,7 +348,7 @@ app.delete('/styles/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await user.delete(request.params.id, request.query);
+            result = await user.remove(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });
@@ -431,7 +432,7 @@ app.delete('/file/:id/',
     async (request, response) => {
         let result = {};
         try {
-            result = await file.delete(request.params.id, request.query);
+            result = await file.remove(request.params.id, request.query);
         }
         catch (error) {
             return response.status(500).json({ message: "Server error while querying database." });

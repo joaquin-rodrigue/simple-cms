@@ -96,7 +96,7 @@ label.error-active, label.error-inactive {
     width: 100%;
 }
 
-.not-logged-in, .page-not-found, .main-section {
+.not-logged-in, .page-not-found, .main-section, .delete-page {
     background-color: rgb(210, 239, 249);
     border-radius: 15px;
     padding: 15px;
@@ -170,8 +170,15 @@ label.error-active, label.error-inactive {
 
 .popup {
     position: absolute;
-    margin: auto;
     top: 5em;
+    background-color: rgb(210, 239, 249);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+#select-new-popup, #error-popup, #edit-selected-content, #place-new-element, #delete-content-warning, #edit-content-text {
+    width: 300px;
+    left: calc(50vw - 150px);
 }
 
 .tools {
